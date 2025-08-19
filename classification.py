@@ -10,7 +10,7 @@ from sklearn.metrics import  roc_auc_score, f1_score
 import scipy.sparse as sp
 
 
-from utils import load_github,load_pokec_z,load_pokec_n
+from utils import load_github,load_pokec,feature_norm
 from gcn import GCN
 from torch_geometric.utils import convert
 from tqdm import tqdm
@@ -70,9 +70,10 @@ torch.backends.cudnn.benchmark = False
 if args.dataset =='github':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_github('github')
 elif args.dataset =='pokec_z':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec_z('pokec_z')
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_z')
 elif args.dataset =='pokec_n':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec_n('pokec_n')
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_n')
+    features = feature_norm(features)
 
 if args.FG:
     adj= sp.load_npz(f'debiased_data/{args.dataset}.npz')
