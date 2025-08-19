@@ -6,22 +6,16 @@ print(torch.__version__)
 
 import torch.nn.functional as F
 import torch.optim as optim
-from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, f1_score
+from sklearn.metrics import  roc_auc_score, f1_score
 import scipy.sparse as sp
 
 
-from utils import load_pokec,load_github
+from utils import load_github,load_pokec_z,load_pokec_n
 from gcn import GCN
-from torch_geometric.utils import dropout_adj, convert,negative_sampling
+from torch_geometric.utils import convert
 from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
-import ctypes
-from torch_geometric.utils import from_scipy_sparse_matrix
-import torch_geometric.transforms as T
-from torch_geometric.data import Data
-from torch_geometric.utils import train_test_split_edges
-from torch_geometric.utils import to_scipy_sparse_matrix
 
 
 
@@ -44,7 +38,7 @@ parser.add_argument('--cuda_device', type=int, default=0,
                     help='cuda device running on.')
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Validate during training pass.')
-parser.add_argument('--dataset', type=str, default='github',
+parser.add_argument('--dataset', type=str, default='pokec_n',
                     help='github or pokec.')
 parser.add_argument('--epochs', type=int, default=1000,
                     help='Number of epochs to train.')
@@ -56,13 +50,13 @@ parser.add_argument('--hidden', type=int, default=128,
                     help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.5,
                     help='Dropout rate (1 - keep probability).')
-parser.add_argument('--FG', type=int, default=0,
-                    help='1 and 0 represent utilizing and not utilizing the preprocessed results.')
+parser.add_argument('--FG', type=int, default=1,
+                    help='1 and 0 represent utilizing and not utilizing the FairGuide data.')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 torch.cuda.set_device(args.cuda_device)
 device = torch.device(f'cuda:{args.cuda_device}' if torch.cuda.is_available() else 'cpu')
-seed=10
+seed=50
 
 import random
 random.seed(seed)
@@ -72,18 +66,19 @@ torch.cuda.manual_seed_all(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-if args.dataset =='poken':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('poken')
-elif args.dataset =='pokez':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokez')
-elif args.dataset =='github':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_github('github')
 
-adj_ori = adj
+if args.dataset =='github':
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_github('github')
+elif args.dataset =='pokec_z':
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec_z('pokec_z')
+elif args.dataset =='pokec_n':
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec_n('pokec_n')
 
 if args.FG:
-    adj= sp.load_npz(f'{args.dataset}.npz')
+    adj= sp.load_npz(f'debiased_data/{args.dataset}.npz')
 
+labels[labels>1]=1
+sens[sens>0]=1
 
 edge_index = convert.from_scipy_sparse_matrix(adj)[0].cuda()
 

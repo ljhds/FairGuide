@@ -51,10 +51,10 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 
-if args.dataset =='poken':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('poken')
-elif args.dataset =='pokez':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokez')
+if args.dataset =='pokec_n':
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_n')
+elif args.dataset =='pokec_z':
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_z')
 elif args.dataset =='github':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_github('github')
 
@@ -168,15 +168,9 @@ def train_autoencoder(autoencoder, features, epochs=100, lr=0.01):
 
         optimizer.step()
 
-hidden_dim = 16
-encoded_dim = 8
-K = 5
-num_clusters = 10
-cross_group_boost = 3.0 
-
 edge_index,edge_weight=from_scipy_sparse_matrix(adj)
 
-mlp_encoder = MLP_encoder(input_dim=features.shape[1], hidden_dim=hidden_dim, output_dim=encoded_dim).to(device)
+mlp_encoder = MLP_encoder(input_dim=features.shape[1], hidden_dim=16, output_dim=8).to(device)
 
 
 features = torch.FloatTensor(features).to(device)  
@@ -186,20 +180,22 @@ train_autoencoder(mlp_encoder, features, epochs=1000, lr=0.005)
 with torch.no_grad():
     encoded_features, _ = mlp_encoder(features)
 
-
-model = PseudoCommunityModel(sens=sens,K=K).to(device)
+# model = PseudoCommunityModel(sens=sens,K=1).to(device) # pokec-z
+model = PseudoCommunityModel(sens=sens,K=5).to(device) 
 
 adj = torch.tensor(adj.toarray(), dtype=torch.float16,requires_grad=False).to(device)
 
 encoded_features=encoded_features.half()
 
-epochs = 500
 
-kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+
+kmeans = KMeans(n_clusters = 10, random_state=42)
 initial_labels = kmeans.fit_predict(encoded_features.cpu().numpy())
 initial_labels = torch.tensor(initial_labels, dtype=torch.long, device=encoded_features.device)
-one_hot_labels = F.one_hot(initial_labels, num_classes=num_clusters).float().to(adj.device).half()
+one_hot_labels = F.one_hot(initial_labels, num_classes = 10).float().to(adj.device).half()
 
+
+epochs = 200 # pokec-n:500
 for epoch in tqdm(range(epochs)):
     adj = update_graph_structure(adj, one_hot_labels, sens)
 
