@@ -68,9 +68,3 @@ Community Detection after FairGuide:
 ```
 Delta_SP: 0.2612
 ```
-
-
-
-=======
-# FairGuide
->>>>>>> 027ebdc39fd5abcefb1e6b24d3a9d2ba4ea47be7
