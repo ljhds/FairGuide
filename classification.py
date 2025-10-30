@@ -71,6 +71,7 @@ if args.dataset =='github':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_github('github')
 elif args.dataset =='pokec_z':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_z')
+    features = feature_norm(features)
 elif args.dataset =='pokec_n':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_n')
     features = feature_norm(features)
