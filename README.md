@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # FairGuide
 
 A PyTorch implementation of "Let’s Grow an Unbiased Community : Guiding the Fairness of Graphs via New Links" 
@@ -70,3 +71,6 @@ Delta_SP: 0.2612
 
 
 
+=======
+# FairGuide
+>>>>>>> 027ebdc39fd5abcefb1e6b24d3a9d2ba4ea47be7
