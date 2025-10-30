@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # FairGuide
 
 A PyTorch implementation of "Let’s Grow an Unbiased Community : Guiding the Fairness of Graphs via New Links" 
