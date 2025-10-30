@@ -181,21 +181,21 @@ with torch.no_grad():
     encoded_features, _ = mlp_encoder(features)
 
 # model = PseudoCommunityModel(sens=sens,K=1).to(device) # pokec-z
+# model = PseudoCommunityModel(sens=sens,K=6).to(device) # pokec-n
 model = PseudoCommunityModel(sens=sens,K=5).to(device) 
 
 adj = torch.tensor(adj.toarray(), dtype=torch.float16,requires_grad=False).to(device)
-
 encoded_features=encoded_features.half()
 
-
-
-kmeans = KMeans(n_clusters = 10, random_state=42)
+kmeans = KMeans(n_clusters = 20, random_state=42)
 initial_labels = kmeans.fit_predict(encoded_features.cpu().numpy())
 initial_labels = torch.tensor(initial_labels, dtype=torch.long, device=encoded_features.device)
-one_hot_labels = F.one_hot(initial_labels, num_classes = 10).float().to(adj.device).half()
+one_hot_labels = F.one_hot(initial_labels, num_classes = 20).float().to(adj.device).half()
 
 
-epochs = 200 # pokec-n:500
+adding_percent = 0.04
+num_edges = torch.count_nonzero(adj).item()
+epochs = int(adding_percent * num_edges / 100)
 for epoch in tqdm(range(epochs)):
     adj = update_graph_structure(adj, one_hot_labels, sens)
 
