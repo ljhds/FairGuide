@@ -1,0 +1,30 @@
+github:
+    n_clusters: 10
+    cross_group_boost: 3.0
+    K: 5
+    adding_percent: 0.04
+    edge_batch: 100
+    lr: 0.001
+    sens_attr: 'location_category'
+    predict_attr: 'followers'
+    label_number: 7000
+pokec_z:
+    n_clusters: 20
+    cross_group_boost: 2.0
+    K: 1
+    adding_percent: 0.015
+    edge_batch: 100
+    lr: 0.001
+    sens_attr: 'region'
+    predict_attr: 'I_am_working_in_field'
+    label_number: 500
+pokec_n:
+    n_clusters: 20
+    cross_group_boost: 3.0
+    K: 6
+    adding_percent: 0.03
+    edge_batch: 100
+    lr: 0.001
+    sens_attr: 'region'
+    predict_attr: 'I_am_working_in_field'
+    label_number: 500

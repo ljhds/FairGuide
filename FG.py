@@ -19,8 +19,7 @@ import ctypes
 from torch_geometric.utils import from_scipy_sparse_matrix
 from sklearn.cluster import KMeans
 from model import PseudoCommunityModel,MLP_encoder
-import os
-
+import yaml
 
 import os
 script_path = os.path.abspath(__file__)
@@ -38,13 +37,17 @@ parser.add_argument('--cuda_device', type=int, default=0,
                     help='cuda device running on.')
 parser.add_argument('--dataset', type=str, default='github',
                     help='a dataset from pokec and github.')
-parser.add_argument('--lr', type=float, default=0.001,
-                    help='Initial learning rate.')
 
+config = yaml.safe_load(open('config.yaml'))
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 torch.cuda.set_device(args.cuda_device)
 device = torch.device(f'cuda:{args.cuda_device}' if torch.cuda.is_available() else 'cpu')
+
+dataset_config = config[args.dataset]
+
+for k, v in dataset_config.items():
+    setattr(args, k, v)
 
 seed = 10
 np.random.seed(seed)
@@ -52,13 +55,11 @@ torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 
 if args.dataset =='pokec_n':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_n')
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_n',label_number=args.label_number)
 elif args.dataset =='pokec_z':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_z')
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_z',label_number=args.label_number)
 elif args.dataset =='github':
-    adj, features, labels, idx_train, idx_val, idx_test, sens = load_github('github')
-
-
+    adj, features, labels, idx_train, idx_val, idx_test, sens = load_github('github',label_number=args.label_number)
 
 def gumbel_edge_sampling(grad, adj_matrix, sens, edge_batch = 100, temperature=1.0, block_size=15000, cross_group_boost = 3.0):
 
@@ -145,7 +146,7 @@ def update_graph_structure(adj_matrix, one_hot_labels, sensitive, edge_batch = 1
 
     #New edge sampling
     selected_rows, selected_cols = gumbel_edge_sampling(
-        grad, adj_matrix,sensitive, edge_batch = edge_batch
+        grad, adj_matrix,sensitive, edge_batch = edge_batch,cross_group_boost=args.cross_group_boost
     )
 
     adj_matrix[selected_rows, selected_cols] = 1.0
@@ -180,24 +181,21 @@ train_autoencoder(mlp_encoder, features, epochs=1000, lr=0.005)
 with torch.no_grad():
     encoded_features, _ = mlp_encoder(features)
 
-# model = PseudoCommunityModel(sens=sens,K=1).to(device) # pokec-z
-# model = PseudoCommunityModel(sens=sens,K=6).to(device) # pokec-n
-model = PseudoCommunityModel(sens=sens,K=5).to(device) 
+model = PseudoCommunityModel(sens=sens,K=args.K).to(device) 
 
 adj = torch.tensor(adj.toarray(), dtype=torch.float16,requires_grad=False).to(device)
 encoded_features=encoded_features.half()
 
-kmeans = KMeans(n_clusters = 20, random_state=42)
+kmeans = KMeans(n_clusters = args.n_clusters, random_state=42)
 initial_labels = kmeans.fit_predict(encoded_features.cpu().numpy())
 initial_labels = torch.tensor(initial_labels, dtype=torch.long, device=encoded_features.device)
-one_hot_labels = F.one_hot(initial_labels, num_classes = 20).float().to(adj.device).half()
+one_hot_labels = F.one_hot(initial_labels, num_classes = args.n_clusters).float().to(adj.device).half()
 
-
-adding_percent = 0.04
+adding_percent = args.adding_percent
 num_edges = torch.count_nonzero(adj).item()
-epochs = int(adding_percent * num_edges / 100)
+epochs = int(adding_percent * num_edges / args.edge_batch)
 for epoch in tqdm(range(epochs)):
-    adj = update_graph_structure(adj, one_hot_labels, sens)
+    adj = update_graph_structure(adj, one_hot_labels, sens, edge_batch=args.edge_batch)
 
 
 adj_numpy = adj.cpu().numpy().astype('float32')

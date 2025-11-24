@@ -24,7 +24,7 @@ def encode_onehot(labels):
 
 
 
-def load_github(dataset,sens_attr="location_category",predict_attr='followers',label_number=500, path="dataset/github/"):
+def load_github(dataset,sens_attr="location_category",predict_attr='followers',label_number=7000, path="dataset/github/"):
     """Load data"""
     print('Loading {} dataset from {}'.format(dataset,path))
 
@@ -65,7 +65,7 @@ def load_github(dataset,sens_attr="location_category",predict_attr='followers',l
     random.seed(20)
     random.shuffle(label_idx)
 
-    idx_train = label_idx[:int(0.25 * len(label_idx))]
+    idx_train = label_idx[:min(int(0.5 * len(label_idx)),label_number)]
     idx_val = label_idx[int(0.5 * len(label_idx)):int(0.75 * len(label_idx))]
 
     idx_test = label_idx[int(0.75 * len(label_idx)):]
