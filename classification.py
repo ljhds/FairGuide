@@ -56,7 +56,7 @@ args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 torch.cuda.set_device(args.cuda_device)
 device = torch.device(f'cuda:{args.cuda_device}' if torch.cuda.is_available() else 'cpu')
-seed = 50
+seed = 10
 
 import random
 random.seed(seed)
