@@ -85,8 +85,8 @@ def calculate_delta_sp(predicted_labels, sens, num_communities):
         community_nodes = np.where(predicted_labels == c)[0]
 
         # node of s = 0 and s = 1 belong to community c
-        community_s0 = np.intersect1d(community_nodes, nodes_s0)  # 社区c且s=0的节点
-        community_s1 = np.intersect1d(community_nodes, nodes_s1)  # 社区c且s=1的节点
+        community_s0 = np.intersect1d(community_nodes, nodes_s0)  
+        community_s1 = np.intersect1d(community_nodes, nodes_s1)  
         
         p_s0 = len(community_s0) / len(nodes_s0) if len(nodes_s0) > 0 else 0
         p_s1 = len(community_s1) / len(nodes_s1) if len(nodes_s1) > 0 else 0
