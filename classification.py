@@ -38,7 +38,7 @@ parser.add_argument('--cuda_device', type=int, default=0,
                     help='cuda device running on.')
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Validate during training pass.')
-parser.add_argument('--dataset', type=str, default='github',
+parser.add_argument('--dataset', type=str, default='pokec_n',
                     help='github or pokec.')
 parser.add_argument('--epochs', type=int, default=1000,
                     help='Number of epochs to train.')
@@ -56,7 +56,7 @@ args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 torch.cuda.set_device(args.cuda_device)
 device = torch.device(f'cuda:{args.cuda_device}' if torch.cuda.is_available() else 'cpu')
-seed = 10
+seed = 50
 
 import random
 random.seed(seed)
@@ -71,10 +71,8 @@ if args.dataset =='github':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_github('github')
 elif args.dataset =='pokec_z':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_z')
-    features = feature_norm(features)
 elif args.dataset =='pokec_n':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_n')
-    features = feature_norm(features)
 
 if args.FG:
     adj= sp.load_npz(f'debiased_data/{args.dataset}.npz')

@@ -66,8 +66,6 @@ elif args.dataset =='pokec_z':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_z')
 elif args.dataset =='pokec_n':
     adj, features, labels, idx_train, idx_val, idx_test, sens = load_pokec('pokec_n')
-    features = feature_norm(features)
-
 
 if args.FG:
     adj= sp.load_npz(f'debiased_data/{args.dataset}.npz')
