@@ -8,8 +8,8 @@ A PyTorch implementation of "Let’s Grow an Unbiased Community : Guiding the Fa
 ## Requirements
 
 ```
-torch==2.5.0
-pyg=2.6.1
+torch == 2.5.0
+pyg == 2.6.1
 ```
 
 
