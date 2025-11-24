@@ -38,7 +38,7 @@ parser.add_argument('--cuda_device', type=int, default=0,
                     help='cuda device running on.')
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Validate during training pass.')
-parser.add_argument('--dataset', type=str, default='pokec_n',
+parser.add_argument('--dataset', type=str, default='github',
                     help='github or pokec.')
 parser.add_argument('--epochs', type=int, default=1000,
                     help='Number of epochs to train.')
